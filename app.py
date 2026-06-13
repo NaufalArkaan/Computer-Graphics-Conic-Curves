@@ -232,7 +232,8 @@ class ParametricCurve:
             'center_x': xc, 'center_y': yc,
             'theta_low': theta_low,
             'theta_high': theta_high,
-            'rumus_text': rumus_text
+            'rumus_text': rumus_text,
+            'r': r
         }
 
     @staticmethod
@@ -256,7 +257,9 @@ class ParametricCurve:
             'center_x': xc, 'center_y': yc,
             'theta_low': theta_low,
             'theta_high': theta_high,
-            'rumus_text': rumus_text
+            'rumus_text': rumus_text,
+            'a': a,
+            'b': b
         }
 
     @staticmethod
@@ -283,7 +286,9 @@ class ParametricCurve:
             'center_x': xp, 'center_y': yp,
             't_low': t_low,
             't_high': t_high,
-            'rumus_text': rumus_text
+            'rumus_text': rumus_text,
+            'a': a,
+            'orientasi': orientasi
         }
 
     @staticmethod
@@ -320,7 +325,9 @@ class ParametricCurve:
             'xc': xc, 'yc': yc,
             'theta_low': theta_low,
             'theta_high': theta_high,
-            'rumus_text': rumus_text
+            'rumus_text': rumus_text,
+            'a': a,
+            'b': b
         }
 
 
@@ -332,22 +339,26 @@ def draw_plot(curve_type, data, is_dark_mode):
         plt.style.use('dark_background')
         text_color = '#f8f9fa'
         grid_color = '#374151'
-        low_res_color = '#60a5fa'       # Biru neon lembut
-        high_res_color = '#facc15'      # Kuning terang
-        center_color = '#ef4444'        # Merah
-        high_center_color = '#4ade80'   # Lime green
-        bbox_face = '#1e293b'
-        bbox_edge = '#3b82f6'
+        low_res_color = 'cyan'
+        high_res_color = 'yellow'
+        center_color = 'red'
+        vertex_color = 'lime'
+        fokus_color = 'magenta'
+        special_color = 'orange'
+        box_bg = '#0d0d1a'
+        formula_bg = '#111122'
     else:
         plt.style.use('default')
         text_color = '#333333'
         grid_color = '#d1d5db'
-        low_res_color = '#1d4ed8'       # Biru tua elegan
-        high_res_color = '#d97706'      # Amber/Oranye gelap
-        center_color = '#dc2626'        # Merah tua
-        high_center_color = '#16a34a'   # Hijau tua
-        bbox_face = '#ffffff'
-        bbox_edge = '#007bff'
+        low_res_color = '#1d4ed8'       # Deep blue
+        high_res_color = '#d97706'      # Deep amber
+        center_color = '#dc2626'        # Deep red
+        vertex_color = '#16a34a'        # Deep green
+        fokus_color = '#b91c1c'         # Crimson
+        special_color = '#c2410c'       # Rust orange
+        box_bg = '#f8f9fa'
+        formula_bg = '#ffffff'
 
     # Konfigurasi parameter global agar menyatu dengan UI
     plt.rcParams.update({
@@ -364,8 +375,195 @@ def draw_plot(curve_type, data, is_dark_mode):
         'legend.edgecolor': grid_color
     })
 
-    fig, ax = plt.subplots(1, 2, figsize=(15, 6.5))
+    fig, ax = plt.subplots(1, 2, figsize=(16, 7.5))
 
+    # Helper functions locally defined for plotting
+    def box_info(ax, lines, x=0.02, y=0.98, edge='cyan'):
+        teks = "\n".join(lines)
+        ax.text(
+            x, y, teks,
+            transform=ax.transAxes,
+            fontsize=8.5,
+            color=text_color,
+            verticalalignment='top',
+            bbox=dict(facecolor=box_bg, edgecolor=edge,
+                      alpha=0.90, pad=6, boxstyle='round,pad=0.4')
+        )
+
+    def tandai_titik(ax, x, y, label, color='red', offset=(5, 5), fs=8):
+        ax.scatter(x, y, color=color, s=100, zorder=6)
+        ax.annotate(label, (x, y),
+                    textcoords="offset points", xytext=offset,
+                    fontsize=fs, color=color,
+                    fontweight='bold')
+
+    # Hitung parameter, titik istimewa, info, dan rumus berdasarkan tipe kurva
+    titik_ist = None
+    info = None
+    rumus = ""
+
+    if curve_type == "Lingkaran":
+        r = data['r']
+        xc = data['center_x']
+        yc = data['center_y']
+        
+        keliling = 2 * np.pi * r
+        luas = np.pi * r ** 2
+        
+        titik_ist = [
+            {'x': xc + r, 'y': yc,     'label': f"Kanan ({xc+r:.1f}, {yc:.1f})",  'color': special_color, 'offset': (6, -14)},
+            {'x': xc - r, 'y': yc,     'label': f"Kiri ({xc-r:.1f}, {yc:.1f})",   'color': special_color, 'offset': (-90, -14)},
+            {'x': xc,     'y': yc + r, 'label': f"Atas ({xc:.1f}, {yc+r:.1f})",   'color': special_color, 'offset': (6, 5)},
+            {'x': xc,     'y': yc - r, 'label': f"Bawah ({xc:.1f}, {yc-r:.1f})",  'color': special_color, 'offset': (6, -14)},
+        ]
+        
+        info = [
+            "── PARAMETER ──────────",
+            f"  Pusat  : ({xc}, {yc})",
+            f"  Radius : r = {r}",
+            f"  Keliling: 2πr = {keliling:.4f}",
+            f"  Luas   : πr²  = {luas:.4f}",
+            "── PERSAMAAN ──────────",
+            f"  (x-{xc})² + (y-{yc})² = {r}²",
+        ]
+        rumus = "Persamaan parametrik:\nx = xc + r·cos(θ)\ny = yc + r·sin(θ)\nθ ∈ [0, 2π)"
+
+    elif curve_type == "Elips":
+        a = data['a']
+        b = data['b']
+        xc = data['center_x']
+        yc = data['center_y']
+        
+        is_horizontal = a >= b
+        if is_horizontal:
+            c = np.sqrt(abs(a**2 - b**2))
+            f1x, f1y = xc + c, yc
+            f2x, f2y = xc - c, yc
+            tipe_sumbu = f"Sumbu Mayor: Horizontal\na = {a}, b = {b}"
+        else:
+            c = np.sqrt(abs(b**2 - a**2))
+            f1x, f1y = xc, yc + c
+            f2x, f2y = xc, yc - c
+            tipe_sumbu = f"Sumbu Mayor: Vertikal\na = {a}, b = {b}"
+            
+        e = c / max(a, b)
+        keliling = np.pi * (3*(a+b) - np.sqrt((3*a+b)*(a+3*b)))
+        luas = np.pi * a * b
+        
+        titik_ist = [
+            {'x': xc + a, 'y': yc,     'label': f"({xc+a:.1f}, {yc:.1f})",  'color': special_color, 'offset': (5, -15)},
+            {'x': xc - a, 'y': yc,     'label': f"({xc-a:.1f}, {yc:.1f})",  'color': special_color, 'offset': (-65, -15)},
+            {'x': xc,     'y': yc + b, 'label': f"({xc:.1f}, {yc+b:.1f})",  'color': special_color, 'offset': (5, 5)},
+            {'x': xc,     'y': yc - b, 'label': f"({xc:.1f}, {yc-b:.1f})",  'color': special_color, 'offset': (5, -15)},
+            {'x': f1x,    'y': f1y,    'label': f"F1({f1x:.1f},{f1y:.1f})", 'color': fokus_color, 'offset': (5, 5)},
+            {'x': f2x,    'y': f2y,    'label': f"F2({f2x:.1f},{f2y:.1f})", 'color': fokus_color, 'offset': (-80, 5)},
+        ]
+        
+        info = [
+            "── PARAMETER ──────────────",
+            f"  Pusat    : ({xc}, {yc})",
+            f"  {tipe_sumbu}",
+            f"  c (fokus): {c:.4f}",
+            f"  Eksentrisitas e : {e:.4f}",
+            f"  Luas     : πab  = {luas:.4f}",
+            f"  Keliling ≈ {keliling:.4f}",
+            "── PERSAMAAN ──────────────",
+            f"  (x-{xc})²/{a}² + (y-{yc})²/{b}² = 1",
+        ]
+        rumus = "Persamaan parametrik:\nx = xc + a·cos(θ)\ny = yc + b·sin(θ)\nθ ∈ [0, 2π)"
+
+    elif curve_type == "Parabola":
+        xp = data['center_x']
+        yp = data['center_y']
+        a = data['a']
+        orientasi = data['orientasi']
+        
+        if orientasi == 'H':
+            fokus_x = xp + 1 / (4 * a) if a != 0 else xp
+            fokus_y = yp
+            direktriks_x = xp - 1 / (4 * a) if a != 0 else xp
+            arah = "Kanan" if a > 0 else "Kiri"
+            persamaan_std = f"(y-{yp})² = {1/a:.4f}·(x-{xp})" if a != 0 else f"y = {yp}"
+            titik_ist = [
+                {'x': xp,      'y': yp,      'label': f"Vertex ({xp:.1f},{yp:.1f})",    'color': vertex_color, 'offset': (6, -15)},
+                {'x': fokus_x, 'y': fokus_y, 'label': f"Fokus ({fokus_x:.1f},{fokus_y:.1f})", 'color': fokus_color, 'offset': (6, 8)},
+            ]
+            info = [
+                "── PARAMETER ──────────────",
+                f"  Vertex   : ({xp}, {yp})",
+                f"  a        : {a}",
+                f"  Arah buka: {arah}",
+                f"  Fokus    : ({fokus_x:.4f}, {fokus_y:.4f})",
+                f"  Direktriks: x = {direktriks_x:.4f}",
+                "── PERSAMAAN ──────────────",
+                f"  {persamaan_std}",
+            ]
+            rumus = "Persamaan parametrik:\nx = xp + a·t²\ny = yp + t\nt ∈ [-10, 10]"
+        else:
+            fokus_x = xp
+            fokus_y = yp + 1 / (4 * a) if a != 0 else yp
+            direktriks_y = yp - 1 / (4 * a) if a != 0 else yp
+            arah = "Atas" if a > 0 else "Bawah"
+            persamaan_std = f"(x-{xp})² = {1/a:.4f}·(y-{yp})" if a != 0 else f"x = {xp}"
+            titik_ist = [
+                {'x': xp,      'y': yp,      'label': f"Vertex ({xp:.1f},{yp:.1f})",    'color': vertex_color, 'offset': (6, -15)},
+                {'x': fokus_x, 'y': fokus_y, 'label': f"Fokus ({fokus_x:.1f},{fokus_y:.1f})", 'color': fokus_color, 'offset': (6, 8)},
+            ]
+            info = [
+                "── PARAMETER ──────────────",
+                f"  Vertex   : ({xp}, {yp})",
+                f"  a        : {a}",
+                f"  Arah buka: {arah}",
+                f"  Fokus    : ({fokus_x:.4f}, {fokus_y:.4f})",
+                f"  Direktriks: y = {direktriks_y:.4f}",
+                "── PERSAMAAN ──────────────",
+                f"  {persamaan_std}",
+            ]
+            rumus = "Persamaan parametrik:\nx = xp + t\ny = yp + a·t²\nt ∈ [-10, 10]"
+
+    elif curve_type == "Hiperbola":
+        a = data['a']
+        b = data['b']
+        xc = data['xc']
+        yc = data['yc']
+        
+        c = np.sqrt(a**2 + b**2)
+        e = c / a
+        v1x, v1y = xc + a, yc
+        v2x, v2y = xc - a, yc
+        f1x, f1y = xc + c, yc
+        f2x, f2y = xc - c, yc
+        m_asim = b / a
+        
+        titik_ist = [
+            {'x': v1x, 'y': v1y, 'label': f"V1({v1x:.1f},{v1y:.1f})", 'color': vertex_color, 'offset': (6, 8)},
+            {'x': v2x, 'y': v2y, 'label': f"V2({v2x:.1f},{v2y:.1f})", 'color': vertex_color, 'offset': (-90, 8)},
+            {'x': f1x, 'y': f1y, 'label': f"F1({f1x:.1f},{f1y:.1f})", 'color': fokus_color, 'offset': (6, 8)},
+            {'x': f2x, 'y': f2y, 'label': f"F2({f2x:.1f},{f2y:.1f})", 'color': fokus_color, 'offset': (-90, 8)},
+        ]
+        
+        info = [
+            "── PARAMETER ──────────────────",
+            f"  Pusat    : ({xc}, {yc})",
+            f"  a (trans): {a}",
+            f"  b (konj) : {b}",
+            f"  c        : √(a²+b²) = {c:.4f}",
+            f"  Eksentrisitas e : {e:.4f}",
+            f"  Vertex   : ({v1x:.4f},{v1y}) & ({v2x:.4f},{v2y})",
+            f"  Fokus    : ({f1x:.4f},{f1y}) & ({f2x:.4f},{f2y})",
+            f"  Asimtot  : y-{yc} = ±{m_asim:.4f}·(x-{xc})",
+            "── PERSAMAAN ──────────────────",
+            f"  (x-{xc})²/{a}² - (y-{yc})²/{b}² = 1",
+        ]
+        rumus = (
+            "Persamaan parametrik:\n"
+            "Cabang kanan: x = xc + a·sec(θ)\n"
+            "Cabang kiri : x = xc - a·sec(θ)\n"
+            "              y = yc + b·tan(θ)\n"
+            "θ ∈ [-1.30, 1.30] rad"
+        )
+
+    # PLOTTING
     if curve_type == "Hiperbola":
         # ----------------- PANEL KIRI (LOW RES) -----------------
         ax[0].plot(data['x1_low'], data['y1_low'], 'o-', color=low_res_color, linewidth=2, markersize=6, label='Cabang Kanan')
@@ -377,7 +575,6 @@ def draw_plot(curve_type, data, is_dark_mode):
         step_anno = max(1, len(x1_low) // 6)
         
         for i in range(0, len(x1_low), step_anno):
-            # Annotate cabang kanan
             ax[0].annotate(
                 f"({x1_low[i]:.1f}, {y1_low[i]:.1f})",
                 (x1_low[i], y1_low[i]),
@@ -386,7 +583,6 @@ def draw_plot(curve_type, data, is_dark_mode):
                 fontsize=7.5,
                 color=text_color
             )
-            # Annotate cabang kiri
             ax[0].annotate(
                 f"({x2_low[i]:.1f}, {y2_low[i]:.1f})",
                 (x2_low[i], y2_low[i]),
@@ -403,44 +599,64 @@ def draw_plot(curve_type, data, is_dark_mode):
         ax[0].set_xlabel("X")
         ax[0].set_ylabel("Y")
         ax[0].set_title(f"Resolusi Rendah  |  Titik = {len(x1_low) * 2}", fontsize=12, color=text_color)
-        ax[0].legend()
+        ax[0].legend(loc='upper right')
         ax[0].axis('equal')
+        
+        if info:
+            box_info(ax[0], info, edge=low_res_color)
 
         # ----------------- PANEL KANAN (HIGH RES) -----------------
         ax[1].plot(data['x1_high'], data['y1_high'], color=high_res_color, linewidth=2, label='Cabang Kanan')
         ax[1].plot(data['x2_high'], data['y2_high'], color='#f59e0b' if is_dark_mode else '#c2410c', linewidth=2, label='Cabang Kiri')
-        ax[1].scatter(data['x1_high'], data['y1_high'], color=center_color, s=20, zorder=3)
-        ax[1].scatter(data['x2_high'], data['y2_high'], color=center_color, s=20, zorder=3)
-        ax[1].scatter(data['xc'], data['yc'], color=high_center_color, s=150, zorder=5, label='Pusat')
+        ax[1].scatter(data['x1_high'], data['y1_high'], color=center_color, s=4, zorder=3)
+        ax[1].scatter(data['x2_high'], data['y2_high'], color=center_color, s=4, zorder=3)
+        ax[1].scatter(data['xc'], data['yc'], color=vertex_color, s=150, zorder=5, label='Pusat')
         ax[1].axhline(0, color=text_color, linewidth=0.8, alpha=0.5)
         ax[1].axvline(0, color=text_color, linewidth=0.8, alpha=0.5)
         ax[1].grid(True, linestyle='--', alpha=0.4)
         ax[1].set_xlabel("X")
         ax[1].set_ylabel("Y")
         ax[1].set_title(f"Resolusi Tinggi  |  Titik = {len(data['x1_high']) * 2}", fontsize=12, color=text_color)
-        ax[1].legend()
+        ax[1].legend(loc='upper right')
         ax[1].axis('equal')
+        
+        if titik_ist:
+            for tp in titik_ist:
+                tandai_titik(ax[1], tp['x'], tp['y'], tp['label'], color=tp.get('color', 'orange'), offset=tp.get('offset', (6, 6)))
+                
+        if info:
+            box_info(ax[1], info, edge=high_res_color)
 
+        # Kotak Rumus Parametrik di pojok kiri bawah
+        ax[1].text(
+            0.02, 0.04, rumus,
+            transform=ax[1].transAxes,
+            fontsize=8.5,
+            color=text_color,
+            verticalalignment='bottom',
+            bbox=dict(facecolor=formula_bg, edgecolor=low_res_color, alpha=0.88, pad=6, boxstyle='round,pad=0.4')
+        )
     else:
+        # Untuk Lingkaran, Elips, Parabola
         x_low, y_low = data['x_low'], data['y_low']
         x_high, y_high = data['x_high'], data['y_high']
         center_x, center_y = data['center_x'], data['center_y']
         
         # ----------------- PANEL KIRI (LOW RES) -----------------
-        ax[0].plot(x_low, y_low, 'o-', color=low_res_color, linewidth=2, markersize=8, label='Kurva')
+        ax[0].plot(x_low, y_low, 'o-', color=low_res_color, linewidth=2, markersize=7, label='Kurva')
         
-        # Anotasi titik koordinat
+        # Anotasi koordinat low res
         step_anno = max(1, len(x_low) // 8)
         for i in range(0, len(x_low), step_anno):
             ax[0].annotate(
-                f"({x_low[i]:.1f}, {y_low[i]:.1f})",
+                f"({x_low[i]:.2f}, {y_low[i]:.2f})",
                 (x_low[i], y_low[i]),
                 textcoords="offset points",
                 xytext=(5, 5),
-                fontsize=7.5,
+                fontsize=7,
                 color=text_color
             )
-
+            
         ax[0].scatter(center_x, center_y, color=center_color, s=150, zorder=5, label='Pusat / Vertex')
         ax[0].axhline(0, color=text_color, linewidth=0.8, alpha=0.5)
         ax[0].axvline(0, color=text_color, linewidth=0.8, alpha=0.5)
@@ -448,30 +664,41 @@ def draw_plot(curve_type, data, is_dark_mode):
         ax[0].set_xlabel("X")
         ax[0].set_ylabel("Y")
         ax[0].set_title(f"Resolusi Rendah  |  Titik = {len(x_low)}", fontsize=12, color=text_color)
-        ax[0].legend()
+        ax[0].legend(loc='upper right')
         ax[0].axis('equal')
-
+        
+        if info:
+            box_info(ax[0], info, edge=low_res_color)
+            
         # ----------------- PANEL KANAN (HIGH RES) -----------------
         ax[1].plot(x_high, y_high, color=high_res_color, linewidth=2, label='Kurva')
-        ax[1].scatter(x_high, y_high, color=center_color, s=25, zorder=3)
-        ax[1].scatter(center_x, center_y, color=high_center_color, s=150, zorder=5, label='Pusat / Vertex')
+        ax[1].scatter(x_high, y_high, color=center_color, s=4, zorder=3)
+        ax[1].scatter(center_x, center_y, color=vertex_color, s=150, zorder=5, label='Pusat / Vertex')
         ax[1].axhline(0, color=text_color, linewidth=0.8, alpha=0.5)
         ax[1].axvline(0, color=text_color, linewidth=0.8, alpha=0.5)
         ax[1].grid(True, linestyle='--', alpha=0.4)
         ax[1].set_xlabel("X")
         ax[1].set_ylabel("Y")
         ax[1].set_title(f"Resolusi Tinggi  |  Titik = {len(x_high)}", fontsize=12, color=text_color)
-        ax[1].legend()
+        ax[1].legend(loc='upper right')
         ax[1].axis('equal')
-
-    # Kotak Rumus Parametrik
-    ax[1].text(
-        0.03, 0.05, data['rumus_text'],
-        transform=ax[1].transAxes,
-        fontsize=9.5,
-        color=text_color,
-        bbox=dict(facecolor=bbox_face, edgecolor=bbox_edge, alpha=0.85, pad=6, boxstyle='round,pad=0.5')
-    )
+        
+        if titik_ist:
+            for tp in titik_ist:
+                tandai_titik(ax[1], tp['x'], tp['y'], tp['label'], color=tp.get('color', 'orange'), offset=tp.get('offset', (6, 6)))
+                
+        if info:
+            box_info(ax[1], info, edge=high_res_color)
+            
+        # Kotak Rumus Parametrik di pojok kiri bawah
+        ax[1].text(
+            0.02, 0.04, rumus,
+            transform=ax[1].transAxes,
+            fontsize=8.5,
+            color=text_color,
+            verticalalignment='bottom',
+            bbox=dict(facecolor=formula_bg, edgecolor=low_res_color, alpha=0.88, pad=6, boxstyle='round,pad=0.4')
+        )
 
     plt.suptitle(f"VISUALISASI PARAMETRIK — {curve_type.upper()}", fontsize=16, fontweight='bold', color=text_color)
     plt.tight_layout()
@@ -505,28 +732,32 @@ st.sidebar.markdown("### ✏️ Parameter Kurva")
 
 # Dynamic parameter inputs
 if curve_type == "Lingkaran":
-    xc = st.sidebar.slider("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    yc = st.sidebar.slider("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    r = st.sidebar.slider("Radius (r)", min_value=0.1, max_value=15.0, value=5.0, step=0.5)
+    col_pos1, col_pos2 = st.sidebar.columns(2)
+    xc = col_pos1.number_input("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
+    yc = col_pos2.number_input("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
     
-    with st.sidebar.expander("⚙️ Pengaturan Resolusi (Lanjutan)"):
-        col3, col4 = st.columns(2)
-        step_besar = col3.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=2.0, step=0.05)
-        step_kecil = col4.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=0.5, step=0.005)
+    col_spec1, col_spec2 = st.sidebar.columns(2)
+    r = col_spec1.number_input("Radius (r)", min_value=0.1, max_value=15.0, value=5.0, step=0.5)
+    
+    col_step1, col_step2 = st.sidebar.columns(2)
+    step_besar = col_step1.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=2.0, step=0.05)
+    step_kecil = col_step2.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=0.5, step=0.005)
     
     # Generate data
     curve_data = ParametricCurve.get_lingkaran(xc, yc, r, step_besar, step_kecil)
 
 elif curve_type == "Elips":
-    xc = st.sidebar.slider("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    yc = st.sidebar.slider("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    a = st.sidebar.slider("Semi Mayor (a)", min_value=0.1, max_value=15.0, value=6.0, step=0.5)
-    b = st.sidebar.slider("Semi Minor (b)", min_value=0.1, max_value=15.0, value=4.0, step=0.5)
+    col_pos1, col_pos2 = st.sidebar.columns(2)
+    xc = col_pos1.number_input("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
+    yc = col_pos2.number_input("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
     
-    with st.sidebar.expander("⚙️ Pengaturan Resolusi (Lanjutan)"):
-        col5, col6 = st.columns(2)
-        step_besar = col5.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=2.0, step=0.05)
-        step_kecil = col6.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=0.5, step=0.005)
+    col_spec1, col_spec2 = st.sidebar.columns(2)
+    a = col_spec1.number_input("Semi Mayor (a)", min_value=0.1, max_value=15.0, value=6.0, step=0.5)
+    b = col_spec2.number_input("Semi Minor (b)", min_value=0.1, max_value=15.0, value=4.0, step=0.5)
+    
+    col_step1, col_step2 = st.sidebar.columns(2)
+    step_besar = col_step1.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=2.0, step=0.05)
+    step_kecil = col_step2.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=0.5, step=0.005)
     
     # Generate data
     curve_data = ParametricCurve.get_elips(xc, yc, a, b, step_besar, step_kecil)
@@ -538,28 +769,32 @@ elif curve_type == "Parabola":
     )
     orientasi_code = 'H' if "Horizontal" in orientasi else 'V'
     
-    xp = st.sidebar.slider("Vertex X (xp)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    yp = st.sidebar.slider("Vertex Y (yp)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    a = st.sidebar.slider("Nilai Fokus/Koefisien (a)", min_value=-5.0, max_value=5.0, value=1.0, step=0.1)
+    col_pos1, col_pos2 = st.sidebar.columns(2)
+    xp = col_pos1.number_input("Vertex X (xp)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
+    yp = col_pos2.number_input("Vertex Y (yp)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
     
-    with st.sidebar.expander("⚙️ Pengaturan Resolusi (Lanjutan)"):
-        col3, col4 = st.columns(2)
-        step_besar = col3.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=5.0, step=0.05)
-        step_kecil = col4.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=1.0, step=0.005)
+    col_spec1, col_spec2 = st.sidebar.columns(2)
+    a = col_spec1.number_input("Nilai a", min_value=-5.0, max_value=5.0, value=1.0, step=0.1)
+    
+    col_step1, col_step2 = st.sidebar.columns(2)
+    step_besar = col_step1.number_input("Step Besar (Low)", value=0.5, min_value=0.05, max_value=5.0, step=0.05)
+    step_kecil = col_step2.number_input("Step Kecil (High)", value=0.05, min_value=0.005, max_value=1.0, step=0.005)
     
     # Generate data
     curve_data = ParametricCurve.get_parabola(xp, yp, a, orientasi_code, step_besar, step_kecil)
 
 elif curve_type == "Hiperbola":
-    xc = st.sidebar.slider("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    yc = st.sidebar.slider("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
-    a = st.sidebar.slider("Sumbu Transversal (a)", min_value=0.1, max_value=15.0, value=3.0, step=0.5)
-    b = st.sidebar.slider("Sumbu Konjugasi (b)", min_value=0.1, max_value=15.0, value=2.0, step=0.5)
+    col_pos1, col_pos2 = st.sidebar.columns(2)
+    xc = col_pos1.number_input("Pusat X (xc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
+    yc = col_pos2.number_input("Pusat Y (yc)", min_value=-10.0, max_value=10.0, value=0.0, step=0.5)
     
-    with st.sidebar.expander("⚙️ Pengaturan Resolusi (Lanjutan)"):
-        col5, col6 = st.columns(2)
-        step_besar = col5.number_input("Step Besar (Low)", value=0.2, min_value=0.01, max_value=1.0, step=0.01)
-        step_kecil = col6.number_input("Step Kecil (High)", value=0.02, min_value=0.001, max_value=0.2, step=0.002)
+    col_spec1, col_spec2 = st.sidebar.columns(2)
+    a = col_spec1.number_input("Sumbu Transversal (a)", min_value=0.1, max_value=15.0, value=3.0, step=0.5)
+    b = col_spec2.number_input("Sumbu Konjugasi (b)", min_value=0.1, max_value=15.0, value=2.0, step=0.5)
+    
+    col_step1, col_step2 = st.sidebar.columns(2)
+    step_besar = col_step1.number_input("Step Besar (Low)", value=0.2, min_value=0.01, max_value=1.0, step=0.01)
+    step_kecil = col_step2.number_input("Step Kecil (High)", value=0.02, min_value=0.001, max_value=0.2, step=0.002)
     
     # Generate data
     curve_data = ParametricCurve.get_hiperbola(xc, yc, a, b, step_besar, step_kecil)
