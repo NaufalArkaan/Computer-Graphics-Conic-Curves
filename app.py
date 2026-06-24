@@ -196,16 +196,20 @@ def inject_custom_css(theme):
         }
         
         /* Memberikan border dan shadow pada input parameter di sidebar saat Light Mode agar tidak samar */
-        [data-testid="stSidebar"] div[data-baseweb="input"], 
-        [data-testid="stSidebar"] div[data-baseweb="select"] {
+        [data-testid="stSidebar"] .stNumberInput div[data-baseweb="input"], 
+        [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"],
+        .stNumberInput div[data-baseweb="input"],
+        .stSelectbox div[data-baseweb="select"] {
             border: 1px solid #cccccc !important;
             border-radius: 6px !important;
             background-color: #ffffff !important;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
             transition: border-color 0.2s ease-in-out !important;
         }
-        [data-testid="stSidebar"] div[data-baseweb="input"]:focus-within, 
-        [data-testid="stSidebar"] div[data-baseweb="select"]:focus-within {
+        [data-testid="stSidebar"] .stNumberInput div[data-baseweb="input"]:focus-within, 
+        [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"]:focus-within,
+        .stNumberInput div[data-baseweb="input"]:focus-within,
+        .stSelectbox div[data-baseweb="select"]:focus-within {
             border-color: var(--accent-color) !important;
             box-shadow: 0 0 0 1px var(--accent-color) !important;
         }
@@ -418,7 +422,7 @@ elif curve_type == "Hiperbola":
 # 5. KONTEN UTAMA & HEADER
 # =====================================================
 st.markdown("<h1 style='text-align: center; margin-bottom: 0px;'><span class='title-gradient'>Visualisator Kurva Parametrik V3</span></h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 1.1rem; color: gray; margin-bottom: 30px;'>Aplikasi Pembangkit Geometri Konik Parametrik Menggunakan Visualisasi Dashboard Clean.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 1.1rem; color: gray; margin-bottom: 30px;'>Aplikasi Pembangkit Geometri Konik Parametrik.</p>", unsafe_allow_html=True)
 
 # Tiga Tab Utama
 tab_low, tab_high, tab_theory = st.tabs(["📉 Resolusi Rendah (Low)", "📈 Resolusi Tinggi (High)", "📖 Penjelasan Teori"])
