@@ -1,0 +1,32 @@
+CATATAN - BATAS PARAMETER HIPERBOLA
+
+1. Mengapa θ dibatasi ±1.25 rad?
+
+- Persamaan hiperbola menggunakan:
+  x = a·sec(θ)
+  y = b·tan(θ)
+
+- sec(θ) = 1 / cos(θ)
+
+- Saat θ mendekati π/2 (≈ 1.5708 rad):
+  • cos(θ) → 0
+  • sec(θ) → ∞
+  • tan(θ) → ∞
+
+- Akibatnya koordinat x dan y menjadi sangat besar, sehingga kurva keluar dari area plot atau menghasilkan nilai infinity.
+
+- Oleh karena itu digunakan batas ±1.25 rad agar:
+  ✓ Visualisasi tetap stabil
+  ✓ Bentuk hiperbola sudah terlihat jelas
+  ✓ Menghindari error atau nilai tak hingga (∞)
+
+
+  2. Kenapa di Kode pakainya 1 / cos(theta) dan bukan sec(theta)?
+    # KALKULASI ASLI DENGAN 2 CABANG (Agar gambar visualnya utuh)
+    # 1 / np.cos(theta) adalah ekuivalen matematis dari sec(theta)
+    x1 = xc + a / np.cos(theta); y1 = yc + b * np.tan(theta) # Cabang Kanan
+    x2 = xc - a / np.cos(theta); y2 = yc + b * np.tan(theta) # Cabang Kiri (Pencerminan)
+
+    Di pelajaran matematika sekolah, kita belajar bahwa rumus Secan (sec) adalah kebalikan dari Cosinus (cos).
+    Secara matematis ditulis seperti ini:
+    sec(θ) = cos(θ) / 1​

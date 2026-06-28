@@ -1,0 +1,10 @@
+CATATAN - BATAS PARAMETER ELIPS/LINGKARAN
+
+Mengapa θ dibatasi sampai 2π (≈ 6.28 rad)?
+
+- Persamaan menggunakan fungsi cos(θ) dan sin(θ).
+- Satu siklus penuh cos dan sin adalah 2π rad (360°).
+- θ = 0 dan θ = 2π menghasilkan titik yang sama.
+- Oleh karena itu, batas 2π digunakan agar kurva tertutup sempurna.
+- Jika kurang dari 2π, kurva belum selesai.
+- Jika lebih dari 2π, kurva hanya akan mengulang gambar yang sama.

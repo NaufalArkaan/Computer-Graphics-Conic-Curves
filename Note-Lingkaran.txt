@@ -1,0 +1,19 @@
+CATATAN - BATAS PARAMETER LINGKARAN
+
+Mengapa θ dibatasi sampai 2π (≈ 6.28 rad)?
+
+- Persamaan lingkaran menggunakan:
+  x = xc + r·cos(θ)
+  y = yc + r·sin(θ)
+
+- Fungsi cos(θ) dan sin(θ) memiliki satu siklus penuh sepanjang 2π rad (360°).
+
+- θ = 0 dan θ = 2π menghasilkan koordinat yang sama, sehingga kurva kembali ke titik awal.
+
+- Oleh karena itu, batas 2π digunakan agar lingkaran terbentuk sempurna (tertutup).
+
+- Jika θ < 2π:
+  Kurva belum selesai atau belum kembali ke titik awal.
+
+- Jika θ > 2π:
+  Kurva hanya akan mengulang putaran yang sama sehingga tidak memberikan bentuk baru.
