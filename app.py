@@ -7,7 +7,7 @@ import pandas as pd
 # 1. KONFIGURASI HALAMAN & STATE TEMA
 # =====================================================
 st.set_page_config(
-    page_title="Pembangkit Kurva Parametrik V3",
+    page_title="Pembangkit Kurva Parametrik V4",
     page_icon="📈",
     layout="wide"
 )
@@ -195,7 +195,6 @@ def inject_custom_css(theme):
             border-bottom: 2px solid var(--accent-color) !important;
         }
         
-        /* Memberikan border dan shadow pada input parameter di sidebar saat Light Mode agar tidak samar */
         [data-testid="stSidebar"] .stNumberInput div[data-baseweb="input"], 
         [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"],
         .stNumberInput div[data-baseweb="input"],
@@ -284,22 +283,50 @@ def tampilkan_gaya_pro(param_array, x1, y1, xc, yc, a, b, title, n_pts, step, te
         ax.scatter(x1, y1, color=warna_titik, s=25, zorder=3, edgecolors='black', lw=0.5, label=f'Koordinat ({n_pts} titik)')
 
     # Titik Pusat / Vertex
+    label_pusat = f"VERTEX ({xc:.1f}, {yc:.1f})" if tipe_kurva == "PARABOLA" else f"PUSAT ({xc:.1f}, {yc:.1f})"
     ax.scatter(xc, yc, color='#FFFF00' if is_dark else '#D97706', s=100, marker='P', zorder=5)
-    ax.annotate(f"PUSAT ({xc:.1f}, {yc:.1f})", xy=(xc, yc), xytext=(5, 5),
+    ax.annotate(label_pusat, xy=(xc, yc), xytext=(5, 5),
                 textcoords="offset points", color='#FFFF00' if is_dark else '#D97706', fontsize=8.5, fontweight='bold')
 
     # --- PENANDA TITIK AWAL & AKHIR ---
-    ax.scatter(x1[0], y1[0], color='#00FF00' if is_dark else '#16A34A', marker='s', s=80, zorder=6, label='Titik Awal')
-    ax.annotate(f"► START ({x1[0]:.1f}, {y1[0]:.1f})", xy=(x1[0], y1[0]), 
-                xytext=(x1[0] + max(a, 1) * 0.15, y1[0] + max(b, 1) * 0.15),
-                color='#00FF00' if is_dark else '#16A34A', fontsize=8.5, fontweight='bold',
-                arrowprops=dict(arrowstyle='->', color='#00FF00' if is_dark else '#16A34A', lw=1.2))
+    if x2 is not None and y2 is not None:
+        # Cabang Kanan
+        ax.scatter(x1[0], y1[0], color='#00FF00' if is_dark else '#16A34A', marker='s', s=80, zorder=6, label='Start Kanan')
+        ax.annotate(f"► START ({x1[0]:.1f}, {y1[0]:.1f})", xy=(x1[0], y1[0]), 
+                    xytext=(x1[0] + max(a, 1) * 0.15, y1[0] + max(b, 1) * 0.15),
+                    color='#00FF00' if is_dark else '#16A34A', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#00FF00' if is_dark else '#16A34A', lw=1.2))
 
-    ax.scatter(x1[-1], y1[-1], color='#FF9900' if is_dark else '#EA580C', marker='x', s=90, zorder=7, label='Titik Akhir')
-    ax.annotate(f"■ END ({x1[-1]:.1f}, {y1[-1]:.1f})", xy=(x1[-1], y1[-1]), 
-                xytext=(x1[-1] + max(a, 1) * 0.15, y1[-1] - max(b, 1) * 0.15),
-                color='#FF9900' if is_dark else '#EA580C', fontsize=8.5, fontweight='bold',
-                arrowprops=dict(arrowstyle='->', color='#FF9900' if is_dark else '#EA580C', lw=1.2))
+        ax.scatter(x1[-1], y1[-1], color='#FF9900' if is_dark else '#EA580C', marker='x', s=90, zorder=7, label='End Kanan')
+        ax.annotate(f"■ END ({x1[-1]:.1f}, {y1[-1]:.1f})", xy=(x1[-1], y1[-1]), 
+                    xytext=(x1[-1] + max(a, 1) * 0.15, y1[-1] - max(b, 1) * 0.15),
+                    color='#FF9900' if is_dark else '#EA580C', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#FF9900' if is_dark else '#EA580C', lw=1.2))
+
+        # Cabang Kiri
+        ax.scatter(x2[0], y2[0], color='#00FF00' if is_dark else '#16A34A', marker='s', s=80, zorder=6, label='Start Kiri')
+        ax.annotate(f"► START ({x2[0]:.1f}, {y2[0]:.1f})", xy=(x2[0], y2[0]), 
+                    xytext=(x2[0] - max(a, 1) * 0.15, y2[0] + max(b, 1) * 0.15),
+                    color='#00FF00' if is_dark else '#16A34A', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#00FF00' if is_dark else '#16A34A', lw=1.2))
+
+        ax.scatter(x2[-1], y2[-1], color='#FF9900' if is_dark else '#EA580C', marker='x', s=90, zorder=7, label='End Kiri')
+        ax.annotate(f"■ END ({x2[-1]:.1f}, {y2[-1]:.1f})", xy=(x2[-1], y2[-1]), 
+                    xytext=(x2[-1] - max(a, 1) * 0.15, y2[-1] - max(b, 1) * 0.15),
+                    color='#FF9900' if is_dark else '#EA580C', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#FF9900' if is_dark else '#EA580C', lw=1.2))
+    else:
+        ax.scatter(x1[0], y1[0], color='#00FF00' if is_dark else '#16A34A', marker='s', s=80, zorder=6, label='Titik Awal')
+        ax.annotate(f"► START ({x1[0]:.1f}, {y1[0]:.1f})", xy=(x1[0], y1[0]), 
+                    xytext=(x1[0] + max(a, 1) * 0.15, y1[0] + max(b, 1) * 0.15),
+                    color='#00FF00' if is_dark else '#16A34A', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#00FF00' if is_dark else '#16A34A', lw=1.2))
+
+        ax.scatter(x1[-1], y1[-1], color='#FF9900' if is_dark else '#EA580C', marker='x', s=90, zorder=7, label='Titik Akhir')
+        ax.annotate(f"■ END ({x1[-1]:.1f}, {y1[-1]:.1f})", xy=(x1[-1], y1[-1]), 
+                    xytext=(x1[-1] + max(a, 1) * 0.15, y1[-1] - max(b, 1) * 0.15),
+                    color='#FF9900' if is_dark else '#EA580C', fontsize=8.5, fontweight='bold',
+                    arrowprops=dict(arrowstyle='->', color='#FF9900' if is_dark else '#EA580C', lw=1.2))
 
     # Teks Koordinat Tipis
     step_lbl = max(1, len(x1) // 6)
@@ -357,13 +384,14 @@ st.sidebar.markdown("---")
 # Pilihan Jenis Kurva (Navigasi Utama)
 curve_type = st.sidebar.selectbox(
     "Pilih Jenis Kurva:",
-    ["Lingkaran", "Elips", "Parabola", "Hiperbola"]
+    ["Lingkaran", "Elips", "Parabola", "Hiperbola"],
+    key="selected_curve_type"
 )
 
 st.sidebar.divider()
 st.sidebar.markdown("### ✏️ Input Parameter")
 
-# Penanganan Nilai Default & Input Form Sesuai V3
+# Penanganan Nilai Default & Input Form Sesuai V4
 if curve_type == "Lingkaran":
     col_pos1, col_pos2 = st.sidebar.columns(2)
     xc = col_pos1.number_input("Pusat X (xc) [contoh: 0.0]", value=0.0, step=0.5)
@@ -389,17 +417,19 @@ elif curve_type == "Elips":
     step_kecil = col_step2.number_input("Step Kecil θ [contoh: 0.05]", value=0.05, min_value=0.001, max_value=0.5, step=0.005)
 
 elif curve_type == "Parabola":
-    orientasi_input = st.sidebar.selectbox(
-        "Tentukan Orientasi [H/V]:",
-        ["Horizontal (Membuka Kiri/Kanan)", "Vertikal (Membuka Atas/Bawah)"]
-    )
-    orientasi = 'H' if "Horizontal" in orientasi_input else 'V'
-    
     col_pos1, col_pos2 = st.sidebar.columns(2)
     xp = col_pos1.number_input("Vertex X (xp) [contoh: 0.0]", value=0.0, step=0.5)
     yp = col_pos2.number_input("Vertex Y (yp) [contoh: 0.0]", value=0.0, step=0.5)
     
-    a = st.sidebar.number_input("Faktor Ketajaman a [contoh: 1.0]", value=1.0, step=0.1)
+    a = st.sidebar.number_input("Jarak Fokus a [contoh: 1.0]", value=1.0, step=0.1)
+    
+    orientasi_pilihan = st.sidebar.selectbox("Tentukan Orientasi [H/V]:", ["Horizontal (Membuka Kiri/Kanan)", "Vertikal (Membuka Atas/Bawah)"])
+    orientasi_val = 'H' if "Horizontal" in orientasi_pilihan else 'V'
+    
+    # Batas t dinamis
+    col_t1, col_t2 = st.sidebar.columns(2)
+    t_min = col_t1.number_input("Batas Min t", value=-5.0, step=1.0)
+    t_max = col_t2.number_input("Batas Max t", value=5.0, step=1.0)
     
     col_step1, col_step2 = st.sidebar.columns(2)
     step_besar = col_step1.number_input("Step Besar parameter t", value=1.0, min_value=0.05, max_value=5.0, step=0.05)
@@ -421,14 +451,14 @@ elif curve_type == "Hiperbola":
 # =====================================================
 # 5. KONTEN UTAMA & HEADER
 # =====================================================
-st.markdown("<h1 style='text-align: center; margin-bottom: 0px;'><span class='title-gradient'>Visualisator Kurva Parametrik V3</span></h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 1.1rem; color: gray; margin-bottom: 30px;'>Aplikasi Pembangkit Geometri Konik Parametrik.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; margin-bottom: 0px;'><span class='title-gradient'>Visualisator Kurva Parametrik</span></h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 1.1rem; color: gray; margin-bottom: 30px;'>Aplikasi Pembangkit Geometri Kurva Parametrik.</p>", unsafe_allow_html=True)
 
 # Tiga Tab Utama
 tab_low, tab_high, tab_theory = st.tabs(["📉 Resolusi Rendah (Low)", "📈 Resolusi Tinggi (High)", "📖 Penjelasan Teori"])
 
 # =====================================================
-# 6. LOGIKA DAN PERHITUNGAN MATEMATIKA SESUAI V3
+# 6. LOGIKA DAN PERHITUNGAN MATEMATIKA SESUAI V4
 # =====================================================
 if curve_type == "Lingkaran":
     keliling = 2 * np.pi * r
@@ -441,7 +471,6 @@ if curve_type == "Lingkaran":
     for title, step_val, tab_obj in configs:
         theta = np.append(np.arange(0, 2 * np.pi, step_val), 2 * np.pi)
         n_pts = len(theta)
-        actual_step = 2 * np.pi / (n_pts - 1) if n_pts > 1 else 0
         x = xc + r * np.cos(theta)
         y = yc + r * np.sin(theta)
         
@@ -462,7 +491,7 @@ if curve_type == "Lingkaran":
         with tab_obj:
             # 1. Gambar Grafik (Plot) tampil penuh
             st.markdown(f"### 📊 Dashboard Plot - {title}")
-            tampilkan_gaya_pro(theta, x, y, xc, yc, r, r, title, n_pts, actual_step, teks_panel, "LINGKARAN")
+            tampilkan_gaya_pro(theta, x, y, xc, yc, r, r, title, n_pts, step_val, teks_panel, "LINGKARAN")
             
             st.divider()
             
@@ -511,7 +540,6 @@ elif curve_type == "Elips":
     for title, step_val, tab_obj in configs:
         theta = np.append(np.arange(0, 2 * np.pi, step_val), 2 * np.pi)
         n_pts = len(theta)
-        actual_step = 2 * np.pi / (n_pts - 1) if n_pts > 1 else 0
         x = xc + a * np.cos(theta)
         y = yc + b * np.sin(theta)
         
@@ -535,7 +563,7 @@ elif curve_type == "Elips":
         with tab_obj:
             # 1. Gambar Grafik (Plot) tampil penuh
             st.markdown(f"### 📊 Dashboard Plot - {title}")
-            tampilkan_gaya_pro(theta, x, y, xc, yc, a, b, title, n_pts, actual_step, teks_panel, "ELIPS")
+            tampilkan_gaya_pro(theta, x, y, xc, yc, a, b, title, n_pts, step_val, teks_panel, "ELIPS")
             
             st.divider()
             
@@ -572,34 +600,38 @@ elif curve_type == "Elips":
             }), use_container_width=True, height=350)
 
 elif curve_type == "Parabola":
+    if t_min >= t_max:
+        st.error("Batas Min t harus lebih kecil dari Batas Max t!")
+        st.stop()
+        
     configs = [
         ("Resolusi Rendah", step_besar, tab_low),
         ("Resolusi Tinggi", step_kecil, tab_high)
     ]
     
     for title, step_val, tab_obj in configs:
-        t = np.arange(-5, 5 + step_val, step_val)
+        # Pembangkitan parameter t yang dinamis
+        t = np.append(np.arange(t_min, t_max, step_val), t_max)
         n_pts = len(t)
         
-        if orientasi == 'H':
+        # Penentuan Persamaan & Perhitungan Berdasarkan Orientasi H/V V4
+        if orientasi_val == 'H':
             x = xp + a * t**2
-            y = yp + t
-            rumus_std = f"(y-{yp})² = {1/a:.4f} * (x-{xp})" if a != 0 else f"y = {yp}"
+            y = yp + 2 * a * t
+            rumus_std = f"(y-{yp})² = {4*a} * (x-{xp})"
+            arah = "Horizontal"
         else:
-            x = xp + t
+            x = xp + 2 * a * t
             y = yp + a * t**2
-            rumus_std = f"(x-{xp})² = {1/a:.4f} * (y-{yp})" if a != 0 else f"x = {xp}"
+            rumus_std = f"(x-{xp})² = {4*a} * (y-{yp})"
+            arah = "Vertikal"
             
-        fokus_dist = 1 / (4 * a) if a != 0 else 0
-        arah = "Horizontal" if orientasi == 'H' else "Vertikal"
-        
         teks_panel = (
             f" ⚙ DATA SPESIFIKASI PARABOLA\n"
             f" ════════════════════════════\n"
             f" Vertex (xp,yp): ({xp:.2f}, {yp:.2f})\n"
             f" Orientasi     : {arah}\n"
-            f" Parameter a   : {a}\n"
-            f" Dist. Fokus   : {fokus_dist:.4f}\n"
+            f" Jarak Fokus a : {a}\n"
             f" Total Titik   : {n_pts}\n"
             f" Skema         : {title}\n"
             f" ════════════════════════════\n"
@@ -617,16 +649,16 @@ elif curve_type == "Parabola":
             # 2. Teks Metadata & Substitusi Rumus di bawah gambar
             st.markdown(f"### 📋 Metadata & Substitusi")
             st.markdown("**Persamaan Parametrik (Rumus Asli):**")
-            if orientasi == 'H':
-                st.code(f"x(t) = xp + a * t²\ny(t) = yp + t")
+            if orientasi_val == 'H':
+                st.code(f"x(t) = xp + a * t²\ny(t) = yp + 2 * a * t")
             else:
-                st.code(f"x(t) = xp + t\ny(t) = yp + a * t²")
+                st.code(f"x(t) = xp + 2 * a * t\ny(t) = yp + a * t²")
                 
             st.markdown("**Persamaan Parametrik (Substitusi):**")
-            if orientasi == 'H':
-                st.code(f"x(t) = {xp} + {a} * t²\ny(t) = {yp} + t")
+            if orientasi_val == 'H':
+                st.code(f"x(t) = {xp} + {a} * t²\ny(t) = {yp} + 2 * {a} * t")
             else:
-                st.code(f"x(t) = {xp} + t\ny(t) = {yp} + {a} * t²")
+                st.code(f"x(t) = {xp} + 2 * {a} * t\ny(t) = {yp} + {a} * t²")
             
             st.divider()
             
@@ -635,8 +667,12 @@ elif curve_type == "Parabola":
             
             # Pembuatan data table
             idx = np.arange(1, n_pts + 1)
-            formula_x_list = [f"X = {xp} + {a}*({val:.2f})²" if orientasi == 'H' else f"X = {xp} + {val:.2f}" for val in t]
-            formula_y_list = [f"Y = {yp} + {val:.2f}" if orientasi == 'H' else f"Y = {yp} + {a}*({val:.2f})²" for val in t]
+            if orientasi_val == 'H':
+                formula_x_list = [f"X = {xp} + {a}*({val:.2f})²" for val in t]
+                formula_y_list = [f"Y = {yp} + 2*{a}*({val:.2f})" for val in t]
+            else:
+                formula_x_list = [f"X = {xp} + 2*{a}*({val:.2f})" for val in t]
+                formula_y_list = [f"Y = {yp} + {a}*({val:.2f})²" for val in t]
             
             df_coords = pd.DataFrame({
                 'IDX': idx,
@@ -663,7 +699,8 @@ elif curve_type == "Hiperbola":
     ]
     
     for title, step_val, tab_obj in configs:
-        theta = np.arange(-batas, batas + step_val, step_val)
+        # PERBAIKAN V4: Mengunci array agar titik akhir selalu simetris tepat di batas (1.25)
+        theta = np.append(np.arange(-batas, batas, step_val), batas)
         n_pts = len(theta)
         x1 = xc + a / np.cos(theta); y1 = yc + b * np.tan(theta)
         x2 = xc - a / np.cos(theta); y2 = yc + b * np.tan(theta)
@@ -693,9 +730,9 @@ elif curve_type == "Hiperbola":
             # 2. Teks Metadata & Substitusi Rumus di bawah gambar
             st.markdown(f"### 📋 Metadata & Substitusi")
             st.markdown("**Persamaan Parametrik (Rumus Asli):**")
-            st.code(f"x(θ) = xc + a / cos(θ)\ny(θ) = yc + b * tan(θ)")
+            st.code(f"x(θ) = xc + a * sec(θ)\ny(θ) = yc + b * tan(θ)")
             st.markdown("**Persamaan Parametrik (Substitusi - Cabang Kanan):**")
-            st.code(f"x(θ) = {xc} + {a} / cos(θ)\ny(θ) = {yc} + {b} * tan(θ)")
+            st.code(f"x(θ) = {xc} + {a} * sec(θ)\ny(θ) = {yc} + {b} * tan(θ)")
             
             st.divider()
             
@@ -704,7 +741,7 @@ elif curve_type == "Hiperbola":
             
             # Pembuatan data table (Cabang Kanan)
             idx = np.arange(1, n_pts + 1)
-            formula_x_list = [f"X = {xc} + {a}/cos({t:.2f})" for t in theta]
+            formula_x_list = [f"X = {xc} + {a}*sec({t:.2f})" for t in theta]
             formula_y_list = [f"Y = {yc} + {b}*tan({t:.2f})" for t in theta]
             
             df_coords = pd.DataFrame({
@@ -783,20 +820,20 @@ with tab_theory:
             """)
             
             st.latex(r"x(t) = x_p + a \cdot t^2")
-            st.latex(r"y(t) = y_p + t")
+            st.latex(r"y(t) = y_p + 2 \cdot a \cdot t")
             
             st.markdown(r"""
             #### 2. Parabola Vertikal (Membuka ke Atas / Bawah)
             Parabola tegak memiliki persamaan parametrik dengan parameter bebas $t$:
             """)
             
-            st.latex(r"x(t) = x_p + t")
+            st.latex(r"x(t) = x_p + 2 \cdot a \cdot t")
             st.latex(r"y(t) = y_p + a \cdot t^2")
             
             st.markdown(r"""
             di mana:
-            - $t$ adalah parameter riil yang mewakili sumbu penjelajah (pada visualisasi dibatasi $t \in [-5, 5]$).
-            - $a$ adalah koefisien fokus/lebar parabola. Jika $a > 0$, parabola membuka ke arah positif (kanan atau atas). Jika $a < 0$, parabola membuka ke arah sebaliknya (kiri atau bawah).
+            - $t$ adalah parameter riil yang mewakili sumbu penjelajah (pada visualisasi dibatasi secara dinamis oleh input $t_{min}$ dan $t_{max}$).
+            - $a$ adalah jarak fokus dari vertex. Jika $a > 0$, parabola membuka ke arah kanan (horizontal) atau atas (vertikal). Jika $a < 0$, parabola membuka ke arah kiri (horizontal) atau bawah (vertikal).
             """)
       
         elif curve_type == "Hiperbola":
@@ -814,7 +851,7 @@ with tab_theory:
             st.markdown("**Cabang Kanan (Membuka ke Kanan):**")
             st.latex(r"x(\theta) = x_c + a \cdot \sec(\theta) = x_c + \frac{a}{\cos(\theta)}")
             
-            st.markdown("**Cabang Kiri (Membuka ke Liri):**")
+            st.markdown("**Cabang Kiri (Membuka ke Kiri):**")
             st.latex(r"x(\theta) = x_c - a \cdot \sec(\theta) = x_c - \frac{a}{\cos(\theta)}")
             
             st.markdown("**Persamaan Koordinat Y (Kedua Cabang):**")
