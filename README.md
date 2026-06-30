@@ -183,15 +183,18 @@ Jalankan seluruh cell notebook atau jalankan cell satu per satu sesuai kebutuhan
 
 # Struktur Project
 
-```text
-Computer-Graphics-Conic-Curves/
-│
-├── kurva_parametrik.ipynb
-├── requirements.txt
-├── README.md
-├── .gitignore
-│
-└── docs/
+```
+├── ⚙️ .gitignore
+├── 📄 Note-Elips.txt
+├── 📄 Note-Hiperbola.txt
+├── 📄 Note-Lingkaran.txt
+├── 📝 README.md
+├── 🐍 app.py
+├── 📄 kurva_parametrik.ipynb
+├── 📄 kurva_parametrik_V2.ipynb
+├── 📄 kurva_parametrik_V3.ipynb
+├── 📄 kurva_parametrik_V4.ipynb
+└── 📄 requirements.txt
 ```
 
 ---
