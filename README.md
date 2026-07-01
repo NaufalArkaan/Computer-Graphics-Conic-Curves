@@ -1,5 +1,11 @@
 # Computer Graphics - Conic Curve Generator
 
+## Deployment Website
+
+https://conic-curves.streamlit.app/
+
+---
+
 ## Deskripsi Proyek
 
 Proyek ini merupakan implementasi pembangkitan kurva parametrik pada mata kuliah Grafika Komputer. Program dibuat menggunakan Python, NumPy, dan Matplotlib untuk memvisualisasikan berbagai jenis kurva konik berdasarkan persamaan parametriknya.
